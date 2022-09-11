@@ -29,11 +29,15 @@ db_drop_and_create_all()
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks', methods=['GET'])
-@requires_auth('get:drinks')
-def drinks(payload):
-    print(payload)
-    return 'Not implemented'
+@app.route('/drinks',methods=['GET'])
+def get_drinks():
+    drinks = Drink.query.all()
+    drinkList = [drink.short() for drink in drinks]
+    print(drinks)
+    return jsonify({
+        "success": True,
+        "drinks": drinkList,
+    }),200
 
 
 '''
@@ -46,9 +50,13 @@ def drinks(payload):
 '''
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
-def drinks(jwt):
-    print(jwt)
-    return 'Not implemented'
+def get_drinks_detail(payload):
+    drinks = Drink.query.all()
+    print(payload)
+    return jsonify({
+        'success': True,
+        'drinks': [drink.long() for drink in drinks]
+    }), 200
 
 '''
 @TODO implement endpoint
@@ -59,7 +67,15 @@ def drinks(jwt):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks',methods=['POST'])
+def post_drinks():
+    drinks = Drink.query.all()
+    drinkList = [drink.short() for drink in drinks]
+    print(drinks)
+    return jsonify({
+        "success": True,
+        "drinks": drinkList,
+    }),200
 
 '''
 @TODO implement endpoint
@@ -136,3 +152,11 @@ def AuthError(error):
         "error": 401,
         "message": "Unauthorized"
     }), 401
+    
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({
+        "success": False,
+        'error': 500,
+        "message": "Internal server error"
+    }), 500
