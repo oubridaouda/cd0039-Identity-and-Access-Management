@@ -1,3 +1,4 @@
+from crypt import methods
 import os
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
@@ -28,6 +29,11 @@ db_drop_and_create_all()
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['GET'])
+@requires_auth('get:drinks')
+def drinks(payload):
+    print(payload)
+    return 'Not implemented'
 
 
 '''
@@ -38,7 +44,11 @@ db_drop_and_create_all()
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def drinks(jwt):
+    print(jwt)
+    return 'Not implemented'
 
 '''
 @TODO implement endpoint
