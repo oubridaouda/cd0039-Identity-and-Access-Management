@@ -31,13 +31,16 @@ db_drop_and_create_all()
 '''
 @app.route('/drinks',methods=['GET'])
 def get_drinks():
-    drinks = Drink.query.all()
-    drinkList = [drink.short() for drink in drinks]
-    print(drinks)
-    return jsonify({
-        "success": True,
-        "drinks": drinkList,
-    }),200
+    try:
+        drinks = Drink.query.all()
+        drinkList = [drink.short() for drink in drinks]
+        print(drinks)
+        return jsonify({
+            "success": True,
+            "drinks": drinkList,
+        }),200
+    except:
+        abort(404)
 
 
 '''
@@ -51,12 +54,15 @@ def get_drinks():
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(payload):
-    drinks = Drink.query.all()
-    print(payload)
-    return jsonify({
-        'success': True,
-        'drinks': [drink.long() for drink in drinks]
-    }), 200
+    try:
+        drinks = Drink.query.all()
+        #print(payload)
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long() for drink in drinks]
+        }), 200
+    except:
+        abort(404)
 
 '''
 @TODO implement endpoint
@@ -69,19 +75,23 @@ def get_drinks_detail(payload):
 '''
 @app.route('/drinks',methods=['POST'])
 @requires_auth('post:drinks')
-def post_drinks():
-    body = request.get_json()
-    drinks = Drink.query.all()
-    title = body.get('title')
-    recipe = body.get('recipe')
-    drinkPost = Drink(title=title,recipe=json.dumps(recipe))
-    drinkPost.insert()
-    drinkList = drinkPost.long()
-    print(drinks)
-    return jsonify({
-        "success": True,
-        "drinks": drinkList,
-    }),200
+def post_drinks(payload):
+    try:
+        body = request.get_json()
+        #print(body)
+        drinks = Drink.query.all()
+        title = body.get('title')
+        recipe = body.get('recipe')
+        drinkPost = Drink(title=title,recipe=json.dumps(recipe))
+        drinkPost.insert()
+        drinkList = drinkPost.long()
+        #print(drinks)
+        return jsonify({
+            "success": True,
+            "drinks": drinkList,
+        }),200
+    except:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -94,7 +104,26 @@ def post_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks/<int:id>',methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drinks(payload,id):
+    try:
+        body = request.get_json()
+        #print(body)
+        drinks = Drink.query.filter_by(id=id).one_or_none()
+        if body.get('title'):
+            drinks.title = body.get('title')
+        if body.get('recipe'):
+            drinks.recipe = body.get('recipe')
+        drinks.update()
+        drinkList = drinks.long()
+        #print(drinks)
+        return jsonify({
+            "success": True,
+            "drinks": drinkList,
+        }),200
+    except:
+        abort(404)
 
 '''
 @TODO implement endpoint
@@ -106,7 +135,23 @@ def post_drinks():
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:id>',methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drinks(payload,id):
+    try:
+        drinks = Drink.query.filter_by(id=id).one_or_none()
+        print(drinks)
+        if drinks is None:
+                abort(404)
 
+        drinks.delete()
+        return jsonify({
+            "success": True,
+            "drinks": id,
+        }),200
+    except:
+        print(Drink.query.filter_by(id=id))
+        abort(404)
 
 # Error Handling
 '''
