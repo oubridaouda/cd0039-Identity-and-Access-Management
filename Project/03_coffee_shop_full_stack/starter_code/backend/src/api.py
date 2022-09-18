@@ -54,6 +54,7 @@ def get_drinks():
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(payload):
+    print(payload)
     try:
         drinks = Drink.query.all()
         #print(payload)
@@ -62,7 +63,7 @@ def get_drinks_detail(payload):
             'drinks': [drink.long() for drink in drinks]
         }), 200
     except:
-        abort(404)
+        abort(401)
 
 '''
 @TODO implement endpoint
@@ -91,7 +92,7 @@ def post_drinks(payload):
             "drinks": drinkList,
         }),200
     except:
-        abort(422)
+        abort(401)
 
 '''
 @TODO implement endpoint
@@ -109,12 +110,11 @@ def post_drinks(payload):
 def patch_drinks(payload,id):
     try:
         body = request.get_json()
-        #print(body)
+        print(body)
         drinks = Drink.query.filter_by(id=id).one_or_none()
-        if body.get('title'):
-            drinks.title = body.get('title')
-        if body.get('recipe'):
-            drinks.recipe = body.get('recipe')
+        drinks.title = body.get('title')
+        drinks.recipe = json.dumps(body.get('recipe'))
+        #print("drinks.recipe")
         drinks.update()
         drinkList = drinks.long()
         #print(drinks)
@@ -142,15 +142,13 @@ def delete_drinks(payload,id):
         drinks = Drink.query.filter_by(id=id).one_or_none()
         print(drinks)
         if drinks is None:
-                abort(404)
-
+            abort(404)
         drinks.delete()
         return jsonify({
             "success": True,
             "drinks": id,
         }),200
     except:
-        print(Drink.query.filter_by(id=id))
         abort(404)
 
 # Error Handling
